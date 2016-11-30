@@ -1,0 +1,16 @@
+regions:
+  - type: openstack
+    name: ms
+    credentials:
+      auth_url: http://example.net:5000/
+      username: admin
+      password: admin
+      tenant: admin
+
+storage:
+  url: http://elastic:9200/
+
+plugins:
+  - module: security.plugins.secgroup
+    checkEveryMinutes: 1
+    regions: ["ms"]
