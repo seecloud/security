@@ -13,17 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from security import base
+from tests.unit import test  # noqa
 
 
-class Plugin(base.Plugin):
-    supported_region_types = {"openstack"}
+class NoopTestCase(test.TestCase):
 
-    def discover(self, region):
-        raise Exception("sup")
-        return [
-            base.Issue("securityGroupTooOpen", "SG too open",
-                       {"id": "fake-id-1"}),
-            base.Issue("securityGroupTooOpen", "SG too open",
-                       {"id": "fake-id-2"}),
-        ]
+    def test_noop(self):
+        self.assertTrue(True)

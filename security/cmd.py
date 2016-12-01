@@ -14,12 +14,13 @@
 #    under the License.
 
 import argparse
+import logging
 import os
 import sys
-import logging
+
 import yaml
 
-from security.checker import Checker
+import security.checker
 
 
 def checker():
@@ -37,7 +38,7 @@ def checker():
         if not filename:
             sys.stderr.write("Error: no config file provided\n")
             parser.print_usage()
-    _checker = Checker()
+    _checker = security.checker.Checker()
     logging.debug("Loading config")
     config = yaml.safe_load(open(filename))
     _checker.configure(config)

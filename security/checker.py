@@ -16,8 +16,10 @@
 import functools
 import importlib
 import logging
-import schedule
 import time
+
+import schedule
+
 
 SCHEDULE_DELAY = 2
 
@@ -37,18 +39,20 @@ class Checker(object):
                 if region["type"] in plugin.supported_region_types:
                     job = functools.partial(self.discover, plugin, region)
                     logging.debug("Sceduling job %s %s", plugin, region_name)
-                    schedule.every(plugin_conf["checkEveryMinutes"]).minutes.do(job)
+                    schedule.every(
+                        plugin_conf["checkEveryMinutes"]).minutes.do(job)
                 else:
-                    logging.warning("Skipping unsupported region type %s by plugin %s",
-                                    region, plugin_conf["module"])
+                    logging.warning("Skipping unsupported region type %s by "
+                                    "plugin %s", region, plugin_conf["module"])
 
     def discover(self, plugin, region):
         logging.info("Discovering issues by plugin %s", plugin)
         try:
             issues = plugin.discover(region)
             logging.debug("Issues discoveder by plugin %s: %s", plugin, issues)
-        except Exception as ex:
-            logging.exception("Error discovering region %s by plugin %s", region["name"], plugin)
+        except Exception:
+            logging.exception("Error discovering region %s by plugin %s",
+                              region["name"], plugin)
 
     def run(self):
         while True:
