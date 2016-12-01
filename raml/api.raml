@@ -1,0 +1,63 @@
+#%RAML 1.0
+title: Seecloud Security Service API
+version: v0.1
+mediaType: application/json
+types:
+  Region:
+    type: string
+  Subject:
+    type: object
+    additionalProperties: true
+    properties:
+      type: string
+      id: string
+    example:
+      id: "abc3978c-e0c9-4c56-8ed6-9d1d92bae110"
+      type: "securityGroup"
+      tenantId: "demo"
+      userId: "demo"
+  Issue:
+    type: object
+    properties:
+      issueType: string
+      description: string
+      discoveredAt: datetime
+      confirmedAt: datetime
+      resolvedAt?: datetime
+      regionId: string
+      subject: Subject
+    example:
+      issueType: SecurityGroupTooOpen
+      description: "Security group too open"
+      discoveredAt: 2016-02-28T16:41:41.090Z
+      confirmedAt: 2016-03-28T16:41:41.090Z
+      regionId: Region1
+      subject:
+        id: "d8b0be7c-2ad7-4083-8d5a-a7a9a56fdd14"
+        type: "securityGroup"
+        tenantId: "demo"
+        userId: "demo"
+/regions/:
+  get:
+    responses:
+      200:
+        body: Region[]
+/issues/:
+  description: List issues
+  get:
+    queryParameters:
+      region:
+        type: string
+        description: Filter by Region
+      limit:
+        type: integer
+        description: limit number of results
+      offset:
+        type: integer
+        offset: offset results
+      discoveredAfter:
+        type: datetime
+        description: Filter by discoveredAt
+    responses:
+      200:
+        body: Issue[]
