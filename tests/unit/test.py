@@ -13,17 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from security import base
+import mock
+import testtools
 
 
-class Plugin(base.Plugin):
-    supported_region_types = {"openstack"}
+class TestCase(testtools.TestCase):
 
-    def discover(self, region):
-        raise Exception("sup")
-        return [
-            base.Issue("securityGroupTooOpen", "SG too open",
-                       {"id": "fake-id-1"}),
-            base.Issue("securityGroupTooOpen", "SG too open",
-                       {"id": "fake-id-2"}),
-        ]
+    def setUp(self):
+        super(TestCase, self).setUp()
+        self.addCleanup(mock.patch.stopall)
+
+    def mock_request(self):
+        return mock.patch("requests.api.request").start()

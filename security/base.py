@@ -16,12 +16,15 @@
 import abc
 import collections
 
+import six
+
+
 Issue = collections.namedtuple("Issue", ["type", "description", "subject"])
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Plugin(object):
-    __metaclass__ = abc.ABCMeta
-    
+
     @abc.abstractmethod
     def discover(self, region):
         """Discover given region
