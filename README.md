@@ -29,6 +29,7 @@ Example:
               "userId": "demo"
         }
     ]
+```
 
 ## Configuration
 
