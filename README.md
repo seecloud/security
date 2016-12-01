@@ -1,4 +1,4 @@
-# Seecloud Security Service
+# Security Monitoring Service
 
 ## HTTP API
 
@@ -7,7 +7,7 @@
 #### List Issues For Region
 
     GET /issues/<region>/
-    
+
 Return list of *Issue* objects
 
 Example:
@@ -29,4 +29,50 @@ Example:
               "userId": "demo"
         }
     ]
+
+## Configuration
+
+Config file is a single yaml file. Configuration may be specified via --config option or `$SECURITY_CHECKER_CONF` environment variable.
+
+```yaml
+regions:
+  - type: openstack
+    name: region1
+    credentials:
+      auth_url: http://example.net:5000/
+      username: admin
+      password: admin
+      tenant: admin
+
+storage:
+  url: http://elastic:9200/
+
+plugins:
+  - module: security.plugins.secgroup
+    checkEveryMinutes: 1
+    regions: ["region1"]
+```
+
+## Plugin API
+
+Plugin should define class `Plugin` in own module. This class should be subclass of `security.base.Plugin`.
+
+This class must define method `discover(region)`. This method should return list of `security.base.Issue` instances.
+
+Also attribute `supported_region_types` should be defined by plugin class.
+
+Example:
+
+```python
+from security import base
+
+
+class Plugin(base.Plugin):
+    supported_region_types = {"dummy"}
+
+    def discover(self, region):
+        return [
+            base.Issue("dummyIssue", "Sample issue", {"id": "fake-id-1"}),
+            base.Issue("dummyIssue", "Sample issue", {"id": "fake-id-2"}),
+        ]
 ```
