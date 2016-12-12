@@ -13,16 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from setuptools import setup, find_packages
+import flask
 
-setup(
-    name="security",
-    version="0.1-dev",
-    packages=find_packages(),
-    include_package_data=True,
-    install_requires=["pyyaml", "schedule", "six", "elasticsearch", "flask"],
-    entry_points={"console_scripts": [
-        "security-checker = security.cmd:checker",
-        "security-api = security.cmd:api"
-    ]}
-)
+from security.api.v1 import issues
+
+app = flask.Flask("security", static_folder=None)
+app.register_blueprint(issues.issues, url_prefix="/api/v1")

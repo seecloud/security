@@ -20,7 +20,9 @@ import sys
 
 import yaml
 
-import security.checker
+from security import app
+from security import checker as security_checker
+from security import config
 
 
 def checker():
@@ -38,9 +40,23 @@ def checker():
         if not filename:
             sys.stderr.write("Error: no config file provided\n")
             parser.print_usage()
-    _checker = security.checker.Checker()
+            sys.exit(1)
+    _checker = security_checker.Checker()
     logging.debug("Loading config")
-    config = yaml.safe_load(open(filename))
-    _checker.configure(config)
+    cf = yaml.safe_load(open(filename))
+    _checker.configure(cf)
     logging.info("Entering loop")
     _checker.run()
+
+
+def api():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", type=str, help=("Listen host"))
+    parser.add_argument("--port", type=int, help=("Listen port"))
+    parser.add_argument("--config", type=str, help=("config file. defaults "
+                                                    "to $SECURITY_CONF"))
+    args = parser.parse_args()
+
+    filename = args.config
+    app.app.config.update(config.get_config(filename))
+    app.app.run(host=args.host, port=args.port)

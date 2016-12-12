@@ -13,16 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from setuptools import setup, find_packages
+import os
 
-setup(
-    name="security",
-    version="0.1-dev",
-    packages=find_packages(),
-    include_package_data=True,
-    install_requires=["pyyaml", "schedule", "six", "elasticsearch", "flask"],
-    entry_points={"console_scripts": [
-        "security-checker = security.cmd:checker",
-        "security-api = security.cmd:api"
-    ]}
-)
+import yaml
+
+
+class ConfigError(Exception):
+    pass
+
+
+def get_config(path=None):
+    path = path or os.environ.get("SECURITY_CONF")
+    if not path:
+        raise ConfigError("No config provided")
+    return yaml.safe_load(open(path))
