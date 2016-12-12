@@ -49,10 +49,10 @@ class Checker(object):
                                     "plugin %s", region, plugin_conf["module"])
 
     def _discover(self, plugin, region_name):
-        logging.info("Discovering issues by plugin %s", plugin)
+        logging.info("Discovering region %s by plugin %s", region_name, plugin)
         try:
             issues = plugin.discover(region_name)
-            logging.debug("Issues discoveder by plugin %s: %s", plugin, issues)
+            logging.debug("Issues discovered by plugin %s: %s", plugin, issues)
         except Exception:
             logging.exception("Error discovering region %s by plugin %s",
                               region_name, plugin)

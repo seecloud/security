@@ -37,7 +37,7 @@ class ElasticTestCase(unittest.TestCase):
         now = datetime.datetime.now()
         days3 = now - datetime.timedelta(days=3)
         days8 = now - datetime.timedelta(days=8)
-        b = elastic.Backend(urls=[os.environ["SC_ELASTIC_URL"]])
+        b = elastic.Backend(hosts=[os.environ["SC_ELASTIC_URL"]])
         try:
             b.es.indices.delete("ms_security_region1")
         except Exception:

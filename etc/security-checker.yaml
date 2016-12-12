@@ -1,0 +1,29 @@
+regions:
+
+  - type: openstack
+    name: re1
+    credentials:
+      auth_url: http://example.net:5000/
+      username: admin
+      password: admin
+      tenant: admin
+
+  - type: openstack
+    name: re2
+    credentials:
+      auth_url: http://example.com:5000/
+      username: admin
+      password: admin
+      tenant: admin
+
+elastic:
+  hosts:
+    - host: elastic
+      port: 9200
+
+
+
+plugins:
+  - module: security.plugins.fake
+    checkEveryMinutes: 1
+    regions: ["re1", "re2"]
