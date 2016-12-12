@@ -20,13 +20,15 @@ import time
 
 import schedule
 
+from security import storage  # noqa
 
-SCHEDULE_DELAY = 2
+SCHEDULE_DELAY = 5
 
 
 class Checker(object):
 
     def configure(self, config):
+        self.storage = storage.Storage(config["elastic"])
         self.regions = {}
         self.plugins = []
         for region in config["regions"]:
@@ -37,22 +39,27 @@ class Checker(object):
                 plugin = plugin_module.Plugin()
                 region = self.regions[region_name]
                 if region["type"] in plugin.supported_region_types:
-                    job = functools.partial(self.discover, plugin, region)
+                    job = functools.partial(self._discover, plugin,
+                                            region_name)
                     logging.debug("Sceduling job %s %s", plugin, region_name)
                     schedule.every(
-                        plugin_conf["checkEveryMinutes"]).minutes.do(job)
+                        plugin_conf["checkEveryMinutes"]).seconds.do(job)
                 else:
                     logging.warning("Skipping unsupported region type %s by "
                                     "plugin %s", region, plugin_conf["module"])
 
-    def discover(self, plugin, region):
+    def _discover(self, plugin, region_name):
         logging.info("Discovering issues by plugin %s", plugin)
         try:
-            issues = plugin.discover(region)
+            issues = plugin.discover(region_name)
             logging.debug("Issues discoveder by plugin %s: %s", plugin, issues)
         except Exception:
             logging.exception("Error discovering region %s by plugin %s",
-                              region["name"], plugin)
+                              region_name, plugin)
+        try:
+            self.storage.update_issues(region_name, issues, plugin.issue_types)
+        except Exception:
+            logging.exception("Error updating issues")
 
     def run(self):
         while True:
