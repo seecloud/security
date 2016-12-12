@@ -1,0 +1,4 @@
+elastic:
+  hosts:
+    - host: elastic
+      port: 9200

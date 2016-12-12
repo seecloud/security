@@ -13,16 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from setuptools import setup, find_packages
+from security import app
+from security import config
 
-setup(
-    name="security",
-    version="0.1-dev",
-    packages=find_packages(),
-    include_package_data=True,
-    install_requires=["pyyaml", "schedule", "six", "elasticsearch", "flask"],
-    entry_points={"console_scripts": [
-        "security-checker = security.cmd:checker",
-        "security-api = security.cmd:api"
-    ]}
-)
+app.app.config.update(config.get_config())
+
+application = app.app

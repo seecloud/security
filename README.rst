@@ -26,6 +26,28 @@ Config file is a single yaml file. Configuration may be specified via --config o
         checkEveryMinutes: 1
         regions: ["region1"]
 
+Running
+*******
+
+With flask server
+=================
+
+.. code-block::
+
+    security-api --config /etc/config.yaml
+
+Use ``security-api --help`` for more information.
+
+With gunicorn
+=============
+
+.. code-block::
+
+    export SECURITY_CONF=/etc/config.yaml
+    gunicorn security.wsgi:application
+
+See `flask documentation <http://flask.pocoo.org/docs/0.11/deploying/wsgi-standalone/>`_ for more information.
+
 Plugin API
 **********
 
