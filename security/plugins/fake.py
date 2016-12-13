@@ -37,5 +37,5 @@ class Plugin(base.Plugin):
     def discover(self, region):
         for issue in self._call_cycle.next():
             args = issue[:]
-            args.insert(2, region)
+            args.insert(2, region["name"])
             yield base.Issue(*args)

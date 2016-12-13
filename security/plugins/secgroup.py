@@ -13,17 +13,61 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+
 from security import base
+
+from keystoneauth1 import identity
+from keystoneauth1 import session
+from neutronclient.v2_0 import client
+
+UNSAFE_RULES = [
+    {
+        "protocol": ("0", "tcp", "udp"),
+        "remote_ip_prefix": (None, "0.0.0.0/0"),
+        "port_range_min": None,
+        "port_range_max": None,
+    },
+]
+
+
+def match_rule(pattern, rule):
+    for field, value in pattern.items():
+        if isinstance(value, tuple):
+            if rule[field] not in value:
+                return False
+        else:
+            if rule[field] != value:
+                return False
+    return True
 
 
 class Plugin(base.Plugin):
     supported_region_types = {"openstack"}
+    issue_types = ("SecurityGroupTooOpen", )
 
     def discover(self, region):
-        raise Exception("sup")
-        return [
-            base.Issue("securityGroupTooOpen", "SG too open",
-                       {"id": "fake-id-1"}),
-            base.Issue("securityGroupTooOpen", "SG too open",
-                       {"id": "fake-id-2"}),
-        ]
+        issues = []
+        auth = identity.Password(**region["credentials"])
+        sess_kwargs = {"auth": auth}
+        cacert = region.get("cacert")
+        if cacert:
+            sess_kwargs["verify"] = cacert
+        sess = session.Session(**sess_kwargs)
+        neutron = client.Client(session=sess)
+        for sg in neutron.list_security_groups()["security_groups"]:
+            logging.debug("Checking security group %s", sg["name"])
+            for rule in sg["security_group_rules"]:
+                fmt = ("Rule %(direction)s [%(ethertype)s/%(protocol)s] "
+                       "%(remote_ip_prefix)s "
+                       "%(port_range_min)s:%(port_range_max)s")
+                logging.debug(fmt % rule)
+                for pattern in UNSAFE_RULES:
+                    if match_rule(pattern, rule):
+                        logging.info("Unsafe rule found")
+                        issue = base.Issue(rule["id"], "SecurityGroupTooOpen",
+                                           region["name"],
+                                           "Security group too open",
+                                           tenant_id=rule["tenant_id"])
+                        issues.append(issue)
+        return issues
