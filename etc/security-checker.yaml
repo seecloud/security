@@ -3,27 +3,26 @@ regions:
   - type: openstack
     name: re1
     credentials:
-      auth_url: http://example.net:5000/
+      auth_url: https://example.net:5000/v2.0/
       username: admin
       password: admin
-      tenant: admin
+      tenant_name: admin
+    cacert: /etc/fuel.pem
 
   - type: openstack
     name: re2
     credentials:
-      auth_url: http://example.com:5000/
+      auth_url: http://example.com:5000/v2.0/
       username: admin
       password: admin
-      tenant: admin
+      tenant_name: admin
 
 elastic:
   hosts:
     - host: elastic
       port: 9200
 
-
-
 plugins:
-  - module: security.plugins.fake
+  - module: security.plugins.secgroup
     checkEveryMinutes: 1
-    regions: ["re1", "re2"]
+    regions: ["re1"]

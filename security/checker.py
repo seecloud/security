@@ -40,7 +40,7 @@ class Checker(object):
                 region = self.regions[region_name]
                 if region["type"] in plugin.supported_region_types:
                     job = functools.partial(self._discover, plugin,
-                                            region_name)
+                                            region)
                     logging.debug("Sceduling job %s %s", plugin, region_name)
                     schedule.every(
                         plugin_conf["checkEveryMinutes"]).seconds.do(job)
@@ -48,16 +48,18 @@ class Checker(object):
                     logging.warning("Skipping unsupported region type %s by "
                                     "plugin %s", region, plugin_conf["module"])
 
-    def _discover(self, plugin, region_name):
-        logging.info("Discovering region %s by plugin %s", region_name, plugin)
+    def _discover(self, plugin, region):
+        logging.info("Discovering region %s by plugin %s", region["name"],
+                     plugin)
         try:
-            issues = plugin.discover(region_name)
+            issues = plugin.discover(region)
             logging.debug("Issues discovered by plugin %s: %s", plugin, issues)
         except Exception:
             logging.exception("Error discovering region %s by plugin %s",
-                              region_name, plugin)
+                              region["name"], plugin)
         try:
-            self.storage.update_issues(region_name, issues, plugin.issue_types)
+            self.storage.update_issues(region["name"], issues,
+                                       plugin.issue_types)
         except Exception:
             logging.exception("Error updating issues")
 

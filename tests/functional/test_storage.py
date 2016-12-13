@@ -48,6 +48,7 @@ class ElasticTestCase(unittest.TestCase):
 
         s = storage.Storage(config)
         plugin = fake.Plugin()
+        region = {"name": "region1"}
 
         try:
             s.backend.es.indices.delete("ms_security_region1")
@@ -55,12 +56,13 @@ class ElasticTestCase(unittest.TestCase):
             pass
 
         def run():
-            s.update_issues("region1", plugin.discover("region1"),
+            s.update_issues(region["name"], plugin.discover(region),
                             plugin.issue_types)
             time.sleep(4)  # need some time for elastic to update data
 
             mapping = {}
-            for issue in s.backend.get_issues("region1", plugin.issue_types):
+            for issue in s.backend.get_issues(region["name"],
+                                              plugin.issue_types):
                 mapping[issue.type + issue.id] = issue
             for key, val in mapping.items():
                 print(key, val)
