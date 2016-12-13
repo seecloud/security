@@ -23,8 +23,8 @@ from security import elastic
 
 
 def store(backend, type_, id_, discovered_at=None, confirmed_at=None):
-    return backend.store(base.Issue(type_, "Test issue %s" % type,
-                                    {"id": id_}, "region1",
+    return backend.store(base.Issue(id_, type_, "region1",
+                                    "Test issue %s" % type_,
                                     discovered_at=discovered_at,
                                     confirmed_at=confirmed_at))
 
@@ -57,3 +57,10 @@ class ElasticTestCase(unittest.TestCase):
         issues = [i.to_dict() for i in b.get_issues("region1",
                                                     discovered_days=1)]
         self.assertEqual(2, len(issues))
+        # get Type2
+        issues = [i.to_dict() for i in b.get_issues("region1", ["Type2"])]
+        self.assertEqual(3, len(issues))
+        # get Type1 and Type2
+        issues = [i.to_dict() for i in b.get_issues("region1",
+                                                    ["Type1", "Type2"])]
+        self.assertEqual(4, len(issues))

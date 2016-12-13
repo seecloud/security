@@ -17,39 +17,45 @@ import abc
 
 import six
 
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S +00"
+
 
 class Issue(object):
-    __slots__ = ("type", "description", "subject", "discovered_at",
-                 "confirmed_at", "resolved_at", "region", "id")
+    __slots__ = ("type", "description", "region", "id", "tenant_id",
+                 "user_id", "data", "discovered_at", "confirmed_at",
+                 "resolved_at")
 
-    def __init__(self, type_, description, subject, region, discovered_at=None,
-                 confirmed_at=None, resolved_at=None):
-        self.type = type_
+    def __init__(self, _id, _type, region, description,
+                 tenant_id=None, user_id=None, data=None,
+                 discovered_at=None,
+                 confirmed_at=None,
+                 resolved_at=None):
+        self.id = _id
+        self.type = _type
         self.description = description
-        self.subject = subject
         self.region = region
+        self.tenant_id = tenant_id
+        self.user_id = user_id
+        self.data = data
 
         self.discovered_at = discovered_at
         self.confirmed_at = confirmed_at
         self.resolved_at = resolved_at
 
-        self.id = subject["id"]
-
     def to_dict(self):
-        dict_ = {
-            "type": self.type,
-            "description": self.description,
-            "subject": self.subject,
-            "region": self.region,
-            "discoveredAt": self.discovered_at.isoformat(),
-            "confirmedAt": self.confirmed_at.isoformat(),
-        }
-        if self.resolved_at:
-            dict_["resolvedAt"] = self.resolved_at.isoformat()
+        dict_ = {}
+        for field in self.__slots__:
+            value = getattr(self, field)
+            if value is not None:
+                if hasattr(value, "strftime"):
+                    dict_[field] = value.strftime(DATETIME_FORMAT)
+                else:
+                    dict_[field] = value
         return dict_
 
     def __unicode__(self):
-        return "<Issue %s %s>" % (self.type, self.id)
+        return "<Issue %s region:%s id:%s)>" % (self.type, self.region,
+                                                self.id)
 
     __repr__ = __str__ = __unicode__
 

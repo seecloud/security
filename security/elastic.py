@@ -24,27 +24,18 @@ from security import base
 
 INDEX = "ms_security_"
 ELASTIC_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss Z"
-PY_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S +00"
 
 
 def elastic_to_issue(dict_):
+    logging.debug("Converting dict %s", dict_)
     for attr in ("discovered_at", "confirmed_at", "resolved_at"):
         value = dict_.get(attr)
         if value:
-            dict_[attr] = datetime.datetime.strptime(value, PY_DATETIME_FORMAT)
-    return dict_
-
-
-def issue_to_elastic(issue):
-    dict_ = {
-        "description": issue.description,
-        "subject": issue.subject,
-        "region": issue.region,
-        "discovered_at": issue.discovered_at.strftime(PY_DATETIME_FORMAT),
-        "confirmed_at": issue.confirmed_at.strftime(PY_DATETIME_FORMAT),
-    }
-    if issue.resolved_at:
-        dict_["resolved_at"] = issue.resolved_at.strftime(PY_DATETIME_FORMAT)
+            dict_[attr] = datetime.datetime.strptime(value,
+                                                     base.DATETIME_FORMAT)
+    dict_["_type"] = dict_.pop("type")
+    dict_["_id"] = dict_.pop("id")
+    logging.debug("DONE %s", dict_)
     return dict_
 
 
@@ -81,19 +72,19 @@ class Backend(object):
             }
         }
         if discovered_days:
-            query["query"]["bool"]["must"] = {
-                "range": {
-                    "discovered_at": {"gte": "now-%dd/h" % discovered_days}
-                }
-            }
+            query["query"]["bool"]["must"] = {"range": {
+                "discovered_at": {"gte": "now-%dd/h" % discovered_days}
+            }}
+        if types:
+            query["query"]["bool"]["filter"] = {"terms": {
+                "type": types,
+            }}
         issues = []
         try:
             for i in helpers.scan(self.es, index=self.index + region,
-                                  doc_type=types, query=query, scroll="1m"):
+                                  doc_type="issue", query=query, scroll="1m"):
                 kwargs = i["_source"]
                 kwargs = elastic_to_issue(kwargs)
-                kwargs["region"] = region
-                kwargs["type_"] = i["_type"]
                 logging.debug("Loaded issue %s" % kwargs)
                 issues.append(base.Issue(**kwargs))
             return issues
@@ -109,16 +100,17 @@ class Backend(object):
         if not region:
             raise StorageException("Missing region")
         try:
-            self.es.indices.create(index=self.index + region, body={
+            retval = self.es.indices.create(index=self.index + region, body={
                 "mappings": {
-                    "_default_": {
+                    "issue": {
                         "properties": {
-                            "region": {
-                                "type": "text",
-                            },
-                            "description": {
-                                "type": "text",
-                            },
+                            "id": {"type": "keyword"},
+                            "type": {"type": "keyword"},
+                            "description": {"type": "text"},
+                            "region": {"type": "keyword"},
+                            "tenant_id": {"type": "keyword"},
+                            "user_id": {"type": "keyword"},
+                            "data": {"type": "text"},
                             "discovered_at": {
                                 "type": "date",
                                 "format": ELASTIC_DATETIME_FORMAT,
@@ -135,6 +127,7 @@ class Backend(object):
                     }
                 }
             })
+            logging.info("Index created %s", retval)
         except elasticsearch.RequestError as ex:
             if ex.error != "index_already_exists_exception":
                 raise
@@ -151,8 +144,10 @@ class Backend(object):
         return retval
 
     def store(self, issue):
+        if issue.user_id:
+            raise Exception("wat")
         self.body += json.dumps({"index": {
-            "_type": issue.type,
-            "_id": issue.id,
+            "_type": "issue",
+            "_id": issue.id
         }}) + "\n"
-        self.body += json.dumps(issue_to_elastic(issue)) + "\n"
+        self.body += json.dumps(issue.to_dict()) + "\n"
