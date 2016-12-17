@@ -20,23 +20,22 @@ from security import base
 
 class Plugin(base.Plugin):
     supported_region_types = {"openstack"}
-    issue_types = ["fakeIssueType1", "fakeIssueType2"]
+    issue_types = ["testType1", "testType2"]
 
-    _all_issues = [
-        ["fakeIssueType1", "Type1 issue", {"id": "fake-id-1"}],
-        ["fakeIssueType1", "Type1 issue", {"id": "fake-id-2"}],
-        ["fakeIssueType2", "Type2 issue", {"id": "fake-id-1"}],
-        ["fakeIssueType2", "Type2 issue", {"id": "fake-id-2"}],
-        ["fakeIssueType2", "Type2 issue", {"id": "fake-id-3"}],
-    ]
-    _call_cycle = itertools.cycle((
-        _all_issues[:-1],
-        _all_issues[1:],
-        _all_issues,
-    ))
+    def __init__(self):
+        self._all_issues = []
+        for id_, type_ in enumerate(["testType1"] * 2 + ["testType2"] * 3):
+            args = ["id-%d" % id_, type_, "Issue %s" % type_]
+            self._all_issues.append(args)
+
+        self._call_cycle = itertools.cycle((
+            self._all_issues[:-1],
+            self._all_issues[1:],
+            self._all_issues,
+        ))
 
     def discover(self, region):
-        issues = self._call_cycle.next()
-        for issue in issues:
-            issue.append(region)
-        return [base.Issue(*args) for args in issues]
+        for issue in self._call_cycle.next():
+            args = issue[:]
+            args.insert(2, region)
+            yield base.Issue(*args)

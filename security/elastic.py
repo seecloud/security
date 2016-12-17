@@ -47,38 +47,30 @@ class Backend(object):
     """Represent elasticsearch backend.
 
     usage:
-        b = elastic.Backend(urls=["url1", "url2"])
-        issues = b.get_issues("Region1", "IssueType1,IssueType2")
+        b = elastic.Backend(hosts=[{"host": "elastic", "port": 9200}])
+        issues = b.get_issues("Region1", types=["Type1", "Type2"])
         b.begin()
         b.store_issue(Issue(...))
         b.commit("region1")
     """
 
-    def __init__(self, urls, **kwargs):
+    def __init__(self, **kwargs):
         self.index = INDEX
-        self.es = elasticsearch.Elasticsearch(urls)
+        self.es = elasticsearch.Elasticsearch(**kwargs)
         self.body = []
 
-    def get_issues(self, region, types=None, discovered_days=None):
-        query = {
-            "query": {
-                "bool": {
-                    "must_not": {
-                        "exists": {
-                            "field": "resolved_at",
-                        },
-                    },
-                },
-            }
-        }
+    def get_issues(self, region, types=None, discovered_days=None,
+                   include_resolved=False):
+        query = {}
+        if not include_resolved:
+            query["must_not"] = {"exists": {"field": "resolved_at"}}
         if discovered_days:
-            query["query"]["bool"]["must"] = {"range": {
+            query["must"] = {"range": {
                 "discovered_at": {"gte": "now-%dd/h" % discovered_days}
             }}
         if types:
-            query["query"]["bool"]["filter"] = {"terms": {
-                "type": types,
-            }}
+            query["filter"] = {"terms": {"type": types}}
+        query = {"query": {"bool": query}}
         issues = []
         try:
             for i in helpers.scan(self.es, index=self.index + region,
@@ -144,8 +136,6 @@ class Backend(object):
         return retval
 
     def store(self, issue):
-        if issue.user_id:
-            raise Exception("wat")
         self.body += json.dumps({"index": {
             "_type": "issue",
             "_id": issue.id
