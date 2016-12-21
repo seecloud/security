@@ -1,0 +1,41 @@
+{%- if security.checker.regions is defined and security.checker.regions|length > 0 %}
+regions:
+  {%- for region in security.checker.regions %}
+  - type: {{ region.type }}
+    name: {{ region.name }}
+    credentials:
+      auth_url: {{ region.credentials.auth_url }}
+      username: {{ region.credentials.username }}
+      password: {{ region.credentials.password }}
+      tenant_name: {{ region.credentials.tenant_name }}
+    {%- if not region.insecure and region.cacert is defined %}
+    cacert: /etc/oss/security/keys/{{ region.name }}-key.pem
+    {% endif %}
+    {%- if region.insecure is defined and region.insecure %}
+    insecure: true
+    {% endif %}
+  {%- endfor -%}
+{% endif %}
+
+{%- if elasticsearch.hosts is defined and elasticsearch.hosts|length > 0 %}
+elastic:
+  hosts:
+    {%- for host in elasticsearch.hosts %}
+    - host: {{ host.host }}
+      port: {{ host.port }}
+    {%- endfor -%}
+{% endif %}
+
+{%- if security.checker.plugins is defined and security.checker.plugins|length > 0 %}
+plugins:
+  {%- for plugin in security.checker.plugins %}
+  - module: security.plugins.{{ plugin.name }}
+    checkEveryMinutes: {{ plugin.checkEveryMinutes }}
+    {%- if plugin.regions is defined and plugin.regions|length > 0 %}
+    regions:
+      {%- for region in plugin.regions %}
+      - {{ region }}
+      {%- endfor -%}
+    {% endif %}
+  {%- endfor -%}
+{% endif %}

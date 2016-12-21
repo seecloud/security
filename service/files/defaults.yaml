@@ -1,0 +1,20 @@
+configs:
+  security:
+    port:
+      cont: 5000
+    debug: false
+    wsgi:
+      workers: 1
+    checker:
+      period: 60
+      connection_timeout: 1
+      read_timeout: 10
+      plugins:
+        - name: secgroup
+          checkEveryMinutes: 1
+          regions: []
+      regions: []
+sources:
+  seecloud/security:
+    git_url: http://github.com/seecloud/security
+    git_ref: master
