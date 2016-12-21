@@ -1,0 +1,27 @@
+dsl_version: 0.1.0
+service:
+  name: security-checker
+  containers:
+    - name: security-checker
+      image: security
+      daemon:
+        command: SECURITY_CHECKER_CONF=/etc/oss/security/config.json security-checker
+        files:
+          - security.conf
+          # {% for region in security.checker.regions %}
+          # {% if not region.insecure and region.cacert is defined %}
+          - "{{ region.name }}-key.pem"
+          # {% endif %}
+          # {% endfor %}
+
+files:
+  security.conf:
+    path: /etc/oss/security/config.json
+    content: security.conf.j2
+  # {% for region in security.checker.regions %}
+  # {% if not region.insecure and region.cacert is defined %}
+  "{{ region.name }}-key.pem":
+    path: /etc/oss/security/keys/{{ region.name }}-key.pem
+    content: region-key.pem.j2
+  # {% endif %}
+  # {% endfor %}

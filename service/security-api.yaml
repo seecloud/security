@@ -1,0 +1,29 @@
+dsl_version: 0.1.0
+service:
+  name: security-api
+  ports:
+    - {{ security.port }}
+  containers:
+    - name: security-api
+      image: security
+      probes:
+        readiness:
+          type: "httpGet"
+          port: {{ security.port.cont }}
+          path: "/"
+        liveness:
+          command: "true"
+          type: "exec"
+      daemon:
+        command: SECURITY_CONF=/etc/oss/security/config.json gunicorn
+                 --name security-api
+                 --workers {{ security.wsgi.workers }}
+                 --bind 0.0.0.0:{{ security.port.cont }}
+                 security.wsgi:application
+        files:
+          - security.conf
+
+files:
+  security.conf:
+    path: /etc/oss/security/config.json
+    content: security.conf.j2

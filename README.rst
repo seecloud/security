@@ -33,6 +33,44 @@ Config file is a single yaml file. Configuration may be specified via --config o
         checkEveryMinutes: 1
         regions: ["region1"]
 
+
+SSL configuration for CCP
+*************************
+
+In case your region requires ssl, CCP config should have additional fields
+
+.. code-block::
+
+    configs:
+      elasticsearch:
+        hosts:
+          - host: e1.example.com
+            port: 9200
+          - host: e2.example.com
+            port: 9200
+          - host: e3.example.com
+            port: 9200
+      security:
+        checker:
+          regions:
+            - type: openstack
+              name: region1
+              credentials:
+                auth_url: http://example.net:5000/
+                username: admin
+                password: admin
+                tenant_name: admin
+              use_ssl: true
+          plugins:
+            - name: secgroup
+              checkEveryMinutes: 1
+              regions: ["region1"]    
+
+      files:
+        region1-key.pem: /opt/key.pem
+
+where section under files has mappings: *<region_name>-key.pem: <key_path>
+
 Service configuration example
 *****************************
 
