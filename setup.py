@@ -20,7 +20,8 @@ setup(
     version="0.1-dev",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["pyyaml", "schedule", "six", "elasticsearch", "flask"],
+    install_requires=["pyyaml", "schedule", "six", "elasticsearch", "flask",
+                      "keystoneauth", "python-neutronclient", "jsonschema"],
     entry_points={"console_scripts": [
         "security-checker = security.cmd:checker",
         "security-api = security.cmd:api"
