@@ -21,6 +21,12 @@ import mock
 
 import json
 
+PERIOD_MAP = {
+    "day": 1,
+    "week": 7,
+    "month": 30,
+}
+
 
 @ddt.ddt
 @mock.patch("security.api.v1.api.get_backend")
@@ -43,6 +49,20 @@ class ApiTestCase(test.TestCase):
         issues = self._get("/api/v1/region/r1/security/issues/" + period)
         expected = {"issues": ["i1", "i2"]}
         self.assertEqual(expected, issues)
+        mock_backend.return_value.get_issues.assert_called_once_with(
+            "r1", discovered_days=PERIOD_MAP[period])
+
+    @ddt.data("day", "week", "month")
+    def test_get_issues_all_regions(self, period, mock_backend):
+        issue1, issue2 = mock.Mock(), mock.Mock()
+        issue1.to_dict.return_value = "i1"
+        issue2.to_dict.return_value = "i2"
+        mock_backend.return_value.get_issues.return_value = [issue1, issue2]
+        issues = self._get("/api/v1/security/issues/" + period)
+        expected = {"issues": ["i1", "i2"]}
+        self.assertEqual(expected, issues)
+        mock_backend.return_value.get_issues.assert_called_once_with(
+            None, discovered_days=PERIOD_MAP[period])
 
     def test_get_regions(self, mock_backend):
         mock_backend.return_value.get_regions.return_value = [1, 2, 3]

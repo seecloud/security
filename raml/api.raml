@@ -23,35 +23,28 @@ types:
       region: "region1"
       discovered_at: "2016-12-15 16:18:22 +00"
       confirmed_at: "2016-12-15 16:18:22 +00"
-
+  Region:
+    type: string
+resourceTypes:
+  regions:
+    200:
+      body:
+        properties:
+          regions: Region[]
+          required: true
+  issues:
+    200:
+      body:
+        properties:
+          issues: Issue[]
+          required: true
 /api/{version}/:
   /regions:
     description: list all regions
-    get:
-      responses:
-        200:
-          body:
-            schema:
-              type: object
-              properties:
-                regions:
-                  type: array
-                  items:
-                    type: string
-              required: regions
-              additionalProperties: false
+    type: regions
   /region/{region_name}/security/issues/{period}:
     description: List issues for given region and period
-    get:
-      responses:
-        200:
-          body:
-            schema:
-              type: object
-              properties:
-                issues:
-                  type: array
-                  items:
-                    type: Issue
-              required: issues
-              additionalProperties: false
+    type: issues
+  /security/issues/{period}:
+    description: List issues for given period
+    type: issues
