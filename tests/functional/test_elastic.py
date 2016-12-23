@@ -18,12 +18,15 @@ import os
 import time
 import unittest
 
+import mock
+
 from security import base
 from security import elastic
 
 
-def store(backend, type_, id_, discovered_at=None, confirmed_at=None):
-    return backend.store(base.Issue(id_, type_, "region1",
+def store(backend, type_, id_, discovered_at=None, confirmed_at=None,
+          region="region1"):
+    return backend.store(base.Issue(id_, type_, region,
                                     "Test issue %s" % type_,
                                     discovered_at=discovered_at,
                                     confirmed_at=confirmed_at))
@@ -38,10 +41,11 @@ class ElasticTestCase(unittest.TestCase):
         days3 = now - datetime.timedelta(days=3)
         days8 = now - datetime.timedelta(days=8)
         b = elastic.Backend(hosts=[os.environ["SC_ELASTIC_URL"]])
-        try:
-            b.es.indices.delete("ms_security_region1")
-        except Exception:
-            pass
+        for reg in ("region1", "region2"):
+            try:
+                b.es.indices.delete(reg)
+            except Exception:
+                pass
         self.assertEqual([], b.get_issues("region1"))
         b.begin()
         store(b, "Type1", "id1", discovered_at=now, confirmed_at=now)
@@ -64,3 +68,20 @@ class ElasticTestCase(unittest.TestCase):
         issues = [i.to_dict() for i in b.get_issues("region1",
                                                     ["Type1", "Type2"])]
         self.assertEqual(4, len(issues))
+
+        # test get from multiple regions
+        b.begin()
+        store(b, "Type1", "id1", discovered_at=now, confirmed_at=now, region="region2")
+        b.commit("region2")
+        time.sleep(1)
+        issues = [i.to_dict() for i in b.get_issues()]
+        issue = {
+            "description": "Test issue Type1",
+            "confirmed_at": mock.ANY,
+            "region": "region2",
+            "discovered_at": mock.ANY,
+            "type": "Type1",
+            "id": "id1",
+        }
+        self.assertIn(issue, issues)
+        self.assertEqual(5, len(issues))
