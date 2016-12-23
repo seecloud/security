@@ -71,7 +71,8 @@ class ElasticTestCase(unittest.TestCase):
 
         # test get from multiple regions
         b.begin()
-        store(b, "Type1", "id1", discovered_at=now, confirmed_at=now, region="region2")
+        store(b, "Type1", "id1", discovered_at=now, confirmed_at=now,
+              region="region2")
         b.commit("region2")
         time.sleep(1)
         issues = [i.to_dict() for i in b.get_issues()]
