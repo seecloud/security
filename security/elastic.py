@@ -66,8 +66,9 @@ class Backend(object):
             if index:
                 yield index
 
-    def get_issues(self, region, types=None, discovered_days=None,
+    def get_issues(self, region=None, types=None, discovered_days=None,
                    include_resolved=False):
+        region = region or "*"
         query = {}
         if not include_resolved:
             query["must_not"] = {"exists": {"field": "resolved_at"}}
