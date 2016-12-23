@@ -59,6 +59,13 @@ class Backend(object):
         self.es = elasticsearch.Elasticsearch(**kwargs)
         self.body = []
 
+    def get_regions(self):
+        prefix_len = len(self.index)
+        for index in self.es.indices.get(self.index + "*"):
+            index = index[prefix_len:]
+            if index:
+                yield index
+
     def get_issues(self, region, types=None, discovered_days=None,
                    include_resolved=False):
         query = {}

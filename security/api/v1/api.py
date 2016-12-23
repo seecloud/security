@@ -23,7 +23,7 @@ PERIOD_MAP = {
     "week": 7,
     "month": 30,
 }
-issues = flask.Blueprint("issues", __name__)
+bp = flask.Blueprint("issues", __name__)
 
 
 def get_backend():
@@ -33,7 +33,7 @@ def get_backend():
     return flask.g.elastic
 
 
-@issues.route("/region/<region>/security/issues/<period>", methods=["GET"])
+@bp.route("/region/<region>/security/issues/<period>", methods=["GET"])
 def get_issues(region, period):
     backend = get_backend()
     days = PERIOD_MAP.get(period)
@@ -42,3 +42,9 @@ def get_issues(region, period):
     issues = backend.get_issues(region, discovered_days=days)
     issues = [i.to_dict() for i in issues]
     return flask.jsonify({"issues": issues})
+
+
+@bp.route("/regions", methods=["GET"])
+def get_regions():
+    backend = get_backend()
+    return flask.jsonify({"regions": list(backend.get_regions())})

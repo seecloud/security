@@ -25,6 +25,21 @@ types:
       confirmed_at: "2016-12-15 16:18:22 +00"
 
 /api/{version}/:
+  /regions:
+    description: list all regions
+    get:
+      responses:
+        200:
+          body:
+            schema:
+              type: object
+              properties:
+                regions:
+                  type: array
+                  items:
+                    type: string
+              required: regions
+              additionalProperties: false
   /region/{region_name}/security/issues/{period}:
     description: List issues for given region and period
     get:
@@ -39,3 +54,4 @@ types:
                   items:
                     type: Issue
               required: issues
+              additionalProperties: false

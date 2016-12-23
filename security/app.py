@@ -15,7 +15,7 @@
 
 import flask
 
-from security.api.v1 import issues
+from security.api.v1 import api
 
 app = flask.Flask("security", static_folder=None)
-app.register_blueprint(issues.issues, url_prefix="/api/v1")
+app.register_blueprint(api.bp, url_prefix="/api/v1")
