@@ -33,18 +33,26 @@ def get_backend():
     return flask.g.elastic
 
 
-@bp.route("/region/<region>/security/issues/<period>", methods=["GET"])
-def get_issues(region, period):
+def _get_issues(region, period):
     backend = get_backend()
     days = PERIOD_MAP.get(period)
     if not days:
         flask.abort(404)
     issues = backend.get_issues(region, discovered_days=days)
-    issues = [i.to_dict() for i in issues]
-    return flask.jsonify({"issues": issues})
+    return [i.to_dict() for i in issues]
 
 
 @bp.route("/regions", methods=["GET"])
 def get_regions():
     backend = get_backend()
     return flask.jsonify({"regions": list(backend.get_regions())})
+
+
+@bp.route("/region/<region>/security/issues/<period>", methods=["GET"])
+def get_issues(region, period):
+    return flask.jsonify({"issues": _get_issues(region, period)})
+
+
+@bp.route("/security/issues/<period>", methods=["GET"])
+def get_issues_all_regions(period):
+    return flask.jsonify({"issues": _get_issues(None, period)})
