@@ -22,12 +22,14 @@ from elasticsearch import helpers
 
 from security import base
 
+LOG = logging.getLogger(__name__)
+
 INDEX = "ms_security_"
 ELASTIC_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss Z"
 
 
 def elastic_to_issue(dict_):
-    logging.debug("Converting dict %s", dict_)
+    LOG.debug("Converting dict %s", dict_)
     for attr in ("discovered_at", "confirmed_at", "resolved_at"):
         value = dict_.get(attr)
         if value:
@@ -35,7 +37,7 @@ def elastic_to_issue(dict_):
                                                      base.DATETIME_FORMAT)
     dict_["_type"] = dict_.pop("type")
     dict_["_id"] = dict_.pop("id")
-    logging.debug("DONE %s", dict_)
+    LOG.debug("DONE %s", dict_)
     return dict_
 
 
@@ -85,7 +87,7 @@ class Backend(object):
                                   doc_type="issue", query=query, scroll="1m"):
                 kwargs = i["_source"]
                 kwargs = elastic_to_issue(kwargs)
-                logging.debug("Loaded issue %s" % kwargs)
+                LOG.debug("Loaded issue %s", kwargs)
                 issues.append(base.Issue(**kwargs))
             return issues
         except elasticsearch.NotFoundError:
@@ -93,7 +95,7 @@ class Backend(object):
 
     def begin(self):
         if self.body:
-            logging.warning("Unsaved data %s", self.body)
+            LOG.warning("Unsaved data %s", self.body)
         self.body = ""
 
     def commit(self, region):
@@ -127,7 +129,7 @@ class Backend(object):
                     }
                 }
             })
-            logging.info("Index created %s", retval)
+            LOG.info("Index created %s", retval)
         except elasticsearch.RequestError as ex:
             if ex.error != "index_already_exists_exception":
                 raise

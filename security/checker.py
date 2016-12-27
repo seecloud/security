@@ -22,6 +22,8 @@ import schedule
 
 from security import storage  # noqa
 
+LOG = logging.getLogger(__name__)
+
 SCHEDULE_DELAY = 5
 
 
@@ -41,26 +43,25 @@ class Checker(object):
                 if region["type"] in plugin.supported_region_types:
                     job = functools.partial(self._discover, plugin,
                                             region)
-                    logging.debug("Sceduling job %s %s", plugin, region_name)
+                    LOG.debug("Sceduling job %s %s", plugin, region_name)
                     schedule.every(
                         plugin_conf["checkEveryMinutes"]).seconds.do(job)
                 else:
-                    logging.warning("Skipping unsupported region type %s by "
-                                    "plugin %s", region, plugin_conf["module"])
+                    LOG.warning("Skipping unsupported region type %s by "
+                                "plugin %s", region, plugin_conf["module"])
 
     def _discover(self, plugin, region):
-        logging.info("Discovering region %s by plugin %s", region["name"],
-                     plugin)
+        LOG.info("Discovering region %s by plugin %s", region["name"], plugin)
         issues = plugin.discover(region)
-        logging.debug("Issues discovered by plugin %s: %s", plugin, issues)
+        LOG.debug("Issues discovered by plugin %s: %s", plugin, issues)
         self.storage.update_issues(region["name"], issues,
                                    plugin.issue_types)
 
     def run(self):
         while True:
-            logging.debug("Running pending")
+            LOG.debug("Running pending")
             try:
                 schedule.run_pending()
             except Exception:
-                logging.exception("Error running task")
+                LOG.exception("Error running task")
             time.sleep(SCHEDULE_DELAY)
