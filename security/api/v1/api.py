@@ -14,9 +14,11 @@
 #    under the License.
 
 import flask
-from flask import request  # noqa
+from oss_lib import config
 
 from security import elastic
+
+CONF = config.CONF
 
 PERIOD_MAP = {
     "day": 1,
@@ -28,8 +30,7 @@ bp = flask.Blueprint("issues", __name__)
 
 def get_backend():
     if not hasattr(flask.g, "elastic"):
-        flask.g.elastic = elastic.Backend(
-            **flask.current_app.config["elastic"])
+        flask.g.elastic = elastic.Backend(**CONF["elastic"])
     return flask.g.elastic
 
 
