@@ -13,17 +13,128 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
+API_DEFAULT_CONF_PATH = "/etc/oss/security/api.yaml"
+CHECKER_DEFAULT_CONF_PATH = "/etc/oss/security/checker.yaml"
 
-import yaml
+DEFAULT = {
+    "regions": [],
+    "elastic": {
+        "hosts": [],
+    },
+    "plugins": [],
+}
 
-
-class ConfigError(Exception):
-    pass
-
-
-def get_config(path=None):
-    path = path or os.environ.get("SECURITY_CONF")
-    if not path:
-        raise ConfigError("No config provided")
-    return yaml.safe_load(open(path))
+SCHEMA = {
+    "regions": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "uniqueItems": True,
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "credentials": {
+                    "type": "object",
+                    "properties": {
+                        "auth_url": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                        "username": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                        "password": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                        "tenant_name": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                    },
+                    "required": ["auth_url", "username", "password",
+                                 "tenant_name"],
+                    "additionalProperties": False,
+                },
+                "cacert": {"type": "string"},
+            },
+            "required": ["type", "name", "credentials"],
+            "additionalProperties": False,
+        },
+    },
+    "plugins": {
+        "type": "array",
+        "uniqueItems": True,
+        "items": {
+            "type": "object",
+            "properties": {
+                "module": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "checkEveryMinutes": {"type": "integer"},
+                "regions": {
+                    "type": "array",
+                    "uniqueItems": True,
+                    "minLenth": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                    },
+                },
+            },
+            "required": ["module", "checkEveryMinutes", "regions"],
+            "additionalProperties": False,
+        },
+    },
+    "elastic": {
+        "type": "object",
+        "properties": {
+            "hosts": {
+                "type": "array",
+                "uniqueItems": True,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "host": {
+                            "type": "string",
+                            "minLength": 1,
+                        },
+                        "port": {"type": "integer"},
+                    },
+                    "required": ["host"],
+                    "additionalProperties": False,
+                },
+            },
+            "http_auth": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 2,
+                "maxItems": 2,
+            },
+            "port": {"type": "integer"},
+            "use_ssl": {"type": "boolean"},
+            "ca_certs": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "client_cert": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "client_key": {
+                "type": "string",
+                "minLength": 1,
+            },
+        },
+        "required": ["hosts"],
+        "additionalProperties": False,
+    },
+}

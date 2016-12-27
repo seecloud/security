@@ -13,9 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oss_lib import config
+
 from security import app
-from security import config
+from security import config as cfg
 
-app.app.config.update(config.get_config())
+config.process_env("SECURITY",
+                   default_config_path=cfg.API_DEFAULT_CONF_PATH,
+                   defaults=cfg.DEFAULT,
+                   validation_schema=cfg.SCHEMA)
 
+app.app.config.update(config.CONF)
 application = app.app

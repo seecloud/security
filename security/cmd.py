@@ -15,48 +15,44 @@
 
 import argparse
 import logging
-import os
-import sys
 
-import yaml
+from oss_lib import config
 
 from security import app
 from security import checker as security_checker
-from security import config
+from security import config as cfg
+
+LOG = logging.getLogger(__name__)
 
 
 def checker():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str,
-                        help=("config file. defaults to $SECURITY_CHECKER_CONF"
-                              " environment variable"))
-    parser.add_argument("--debug", action="store_true")
-    args = parser.parse_args()
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    filename = args.config
-    if not filename:
-        filename = os.environ.get("SECURITY_CHECKER_CONF")
-        if not filename:
-            sys.stderr.write("Error: no config file provided\n")
-            parser.print_usage()
-            sys.exit(1)
+    config.process_args("SECURITY_CHECKER",
+                        default_config_path=cfg.CHECKER_DEFAULT_CONF_PATH,
+                        defaults=cfg.DEFAULT,
+                        validation_schema=cfg.SCHEMA)
     _checker = security_checker.Checker()
-    logging.debug("Loading config")
-    cf = yaml.safe_load(open(filename))
-    _checker.configure(cf)
-    logging.info("Entering loop")
+    LOG.debug("Loading config")
+    _checker.configure(config.CONF)
+    LOG.info("Entering loop")
     _checker.run()
 
 
 def api():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", type=str, help=("Listen host"))
-    parser.add_argument("--port", type=int, help=("Listen port"))
-    parser.add_argument("--config", type=str, help=("config file. defaults "
-                                                    "to $SECURITY_CONF"))
-    args = parser.parse_args()
-
-    filename = args.config
-    app.app.config.update(config.get_config(filename))
+    parser.add_argument("--host",
+                        default="0.0.0.0",
+                        help="A host to bind development server. "
+                             "(default 0.0.0.0)")
+    parser.add_argument("--port",
+                        type=int,
+                        default=5000,
+                        help="A port to bind development server. "
+                             "(default 5000)")
+    args = config.process_args("SECURITY",
+                               parser=parser,
+                               default_config_path=cfg.API_DEFAULT_CONF_PATH,
+                               defaults=cfg.DEFAULT,
+                               validation_schema=cfg.SCHEMA)
+    app.app.config.update(config.CONF)
+    app.app.config["DEBUG"] = args.debug
     app.app.run(host=args.host, port=args.port)
