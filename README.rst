@@ -1,8 +1,8 @@
 Security Monitoring Service
 ###########################
 
-Configuration
-*************
+Checker configuration
+*********************
 
 Config file is a single yaml file. Configuration may be specified via --config option or ``$SECURITY_CHECKER_CONF`` environment variable.
 
@@ -11,20 +11,40 @@ Config file is a single yaml file. Configuration may be specified via --config o
     regions:
       - type: openstack
         name: region1
+        cacert: /etc/cacert.pem
         credentials:
           auth_url: http://example.net:5000/
           username: admin
           password: admin
-          tenant: admin
+          tenant_name: admin
           
     elastic:
-      - host: example.com
-        port: 9200
+      hosts:
+        - host: e1.example.com
+          port: 9200
+        - host: e2.example.com
+          port: 9200
+      use_ssl: true
+      verify_certs: false
       
     plugins:
       - module: security.plugins.secgroup
         checkEveryMinutes: 1
         regions: ["region1"]
+
+Service configuration example
+*****************************
+
+.. code-block::
+
+    elastic:
+      hosts:
+        - host: e1.example.com
+          port: 9200
+        - host: e2.example.com
+          port: 9200
+      use_ssl: true
+      verify_certs: false
 
 Running service
 ***************
