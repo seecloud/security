@@ -51,20 +51,16 @@ class Checker(object):
     def _discover(self, plugin, region):
         logging.info("Discovering region %s by plugin %s", region["name"],
                      plugin)
-        try:
-            issues = plugin.discover(region)
-            logging.debug("Issues discovered by plugin %s: %s", plugin, issues)
-        except Exception:
-            logging.exception("Error discovering region %s by plugin %s",
-                              region["name"], plugin)
-        try:
-            self.storage.update_issues(region["name"], issues,
-                                       plugin.issue_types)
-        except Exception:
-            logging.exception("Error updating issues")
+        issues = plugin.discover(region)
+        logging.debug("Issues discovered by plugin %s: %s", plugin, issues)
+        self.storage.update_issues(region["name"], issues,
+                                   plugin.issue_types)
 
     def run(self):
         while True:
             logging.debug("Running pending")
-            schedule.run_pending()
+            try:
+                schedule.run_pending()
+            except Exception:
+                logging.exception("Error running task")
             time.sleep(SCHEDULE_DELAY)
