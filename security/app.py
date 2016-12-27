@@ -14,8 +14,11 @@
 #    under the License.
 
 import flask
+from oss_lib import routing
 
 from security.api.v1 import api
 
 app = flask.Flask("security", static_folder=None)
 app.register_blueprint(api.bp, url_prefix="/api/v1")
+
+app = routing.add_routing_map(app, html_uri=None, json_uri="/")
