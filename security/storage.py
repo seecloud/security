@@ -19,11 +19,13 @@ import logging
 
 from security import elastic
 
+LOG = logging.getLogger(__name__)
+
 
 class Storage:
 
     def __init__(self, config):
-        logging.debug("Loading backend with config %s", config)
+        LOG.debug("Loading backend with config %s", config)
         self.backend = elastic.Backend(**config)
 
     def update_issues(self, region, issues, issue_types):
@@ -48,23 +50,23 @@ class Storage:
             stored_issues[issue.type][issue.id] = issue
             #  Check if issue had been resolved
             if issue.id not in discovered_issues[issue.type]:
-                logging.info("Resolved issue %s", issue)
+                LOG.info("Resolved issue %s", issue)
                 issue.resolved_at = now
-                logging.debug("(discovered %s)" % issue.discovered_at)
+                LOG.debug("(discovered %s)", issue.discovered_at)
                 self.backend.store(issue)
 
         #  Update known issues
         for issue in issues:
-            logging.debug("Checking known issue %s", issue)
-            logging.debug("DICT %s", issue.to_dict())
+            LOG.debug("Checking known issue %s", issue)
+            LOG.debug("DICT %s", issue.to_dict())
             stored = stored_issues[issue.type].get(issue.id)
             if stored:
-                logging.debug("Updating known issue %s (%s)", issue,
-                              issue.discovered_at)
+                LOG.debug("Updating known issue %s (%s)",
+                          issue, issue.discovered_at)
                 issue.discovered_at = stored.discovered_at
                 issue.confirmed_at = now
             else:
-                logging.info("Storing new issue %s", issue)
+                LOG.info("Storing new issue %s", issue)
                 issue.discovered_at = now
                 issue.confirmed_at = now
             self.backend.store(issue)

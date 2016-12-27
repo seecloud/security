@@ -39,7 +39,7 @@ class ElasticTestCase(unittest.TestCase):
 
     @unittest.skipIf("SC_ELASTIC_URL" not in os.environ,
                      "$SC_ELASTIC_URL is not set")
-    @mock.patch("security.storage.logging")
+    @mock.patch("security.storage.LOG")
     def test_update_issues(self, mock_logging):
         config = {
             "type": "elastic",
