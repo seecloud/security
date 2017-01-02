@@ -12,6 +12,7 @@ Config file is a single yaml file. Configuration may be specified via --config o
       - type: openstack
         name: region1
         cacert: /etc/cacert.pem
+        insecure: False
         credentials:
           auth_url: http://example.net:5000/
           username: admin
