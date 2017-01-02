@@ -50,9 +50,13 @@ class Plugin(base.Plugin):
         issues = []
         auth = identity.Password(**region["credentials"])
         sess_kwargs = {"auth": auth}
-        cacert = region.get("cacert")
-        if cacert:
-            sess_kwargs["verify"] = cacert
+        insecure = region.get("insecure")
+        if insecure:
+            sess_kwargs["verify"] = False
+        else:
+            cacert = region.get("cacert")
+            if cacert:
+                sess_kwargs["verify"] = cacert
         sess = session.Session(**sess_kwargs)
         neutron = client.Client(session=sess)
         for sg in neutron.list_security_groups()["security_groups"]:
