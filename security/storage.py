@@ -70,4 +70,7 @@ class Storage:
                 issue.discovered_at = now
                 issue.confirmed_at = now
             self.backend.store(issue)
-        self.backend.commit(region)
+        if self.backend.body:
+            self.backend.commit(region)
+        else:
+            LOG.debug("No issues found at the %s region", region)
