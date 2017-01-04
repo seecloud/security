@@ -64,6 +64,7 @@ SCHEMA = {
                     "additionalProperties": False,
                 },
                 "cacert": {"type": "string"},
+                "insecure": {"type": "boolean"}
             },
             "required": ["type", "name", "credentials"],
             "additionalProperties": False,
