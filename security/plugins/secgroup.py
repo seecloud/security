@@ -60,7 +60,11 @@ class Plugin(base.Plugin):
             if cacert:
                 sess_kwargs["verify"] = cacert
         sess = session.Session(**sess_kwargs)
-        neutron = client.Client(session=sess)
+        neutron = client.Client(
+            interface=region.get("interface", "public"),
+            endpoint_override=region.get("endpoint_override"),
+            session=sess,
+        )
         for sg in neutron.list_security_groups()["security_groups"]:
             LOG.debug("Checking security group %s", sg["name"])
             for rule in sg["security_group_rules"]:
