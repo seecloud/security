@@ -4,7 +4,9 @@ Security Monitoring Service
 Checker configuration
 *********************
 
-Config file is a single yaml file. Configuration may be specified via --config option or ``$SECURITY_CHECKER_CONF`` environment variable.
+Config file is a single yaml file. Configuration may be specified via
+the ``--config-file`` option or the ``$SECURITY_CHECKER_CONF`` environment
+variable.
 
 .. code-block::
 
@@ -12,13 +14,13 @@ Config file is a single yaml file. Configuration may be specified via --config o
       - type: openstack
         name: region1
         cacert: /etc/cacert.pem
-        insecure: False
+        insecure: false
         credentials:
           auth_url: http://example.net:5000/
           username: admin
           password: admin
           tenant_name: admin
-          
+
     elastic:
       hosts:
         - host: e1.example.com
@@ -27,7 +29,7 @@ Config file is a single yaml file. Configuration may be specified via --config o
           port: 9200
       use_ssl: true
       verify_certs: false
-      
+
     plugins:
       - module: security.plugins.secgroup
         checkEveryMinutes: 1
@@ -93,7 +95,7 @@ With flask server
 
 .. code-block::
 
-    security-api --config /etc/config.yaml
+    security-api --config-file /etc/config.yaml
 
 Use ``security-api --help`` for more information.
 
@@ -112,7 +114,7 @@ Running checker
 
 .. code-block::
 
-    security-checker --config /etc/config.yaml
+    security-checker --config-file /etc/config.yaml
 
 Use ``security-checker --help`` for more information.
 
@@ -128,13 +130,13 @@ Also attribute ``supported_region_types`` should be defined by plugin class.
 Example:
 
 .. code-block:: python
-    
+
     from security import base
-    
-    
+
+
     class Plugin(base.Plugin):
         supported_region_types = {"dummy"}
-        
+
         def discover(self, region):
             return [
                 base.Issue("id-1", "Type1", "region1", "Sample issue"),
@@ -173,5 +175,5 @@ Example:
             "region_id": "Region1",
             "discovered_at": "2016-02-28T16:41:41.090Z",
             "confirmed_at": "2016-03-28T16:41:41.090Z",
-        }     
+        }
     ]
