@@ -16,6 +16,16 @@ regions:
       username: admin
       password: admin
       tenant_name: admin
+    interface: admin
+
+  - type: openstack
+    name: re3
+    credentials:
+      auth_url: http://example.com:5000/v2.0/
+      username: admin
+      password: admin
+      tenant_name: admin
+    endpoint_override: http://example.com:9696/
 
 elastic:
   hosts:

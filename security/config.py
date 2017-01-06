@@ -64,7 +64,15 @@ SCHEMA = {
                     "additionalProperties": False,
                 },
                 "cacert": {"type": "string"},
-                "insecure": {"type": "boolean"}
+                "insecure": {"type": "boolean"},
+                "interface": {
+                    "type": "string",
+                    "oneOf": [
+                        {"enum": ["public", "internal", "admin"]},
+                        {"enum": ["publicURL", "internalURL", "adminURL"]},
+                    ],
+                },
+                "endpoint_override": {"format": "uri"},
             },
             "required": ["type", "name", "credentials"],
             "additionalProperties": False,

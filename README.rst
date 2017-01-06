@@ -35,6 +35,43 @@ variable.
         checkEveryMinutes: 1
         regions: ["region1"]
 
+Regions with the ``openstack`` type can be configured without checking Keystone
+certificate with the ``insecure: false`` value, it also means that ``cacert``
+is optional and can be omitted.
+
+By default, the Neutron endpoint with the ``public`` interface is used for
+security analyses. The type of endpoint can be changed by the ``interface``
+parameter with three available values ``public``, ``private`` and ``admin``:
+
+.. code-block::
+
+    regions:
+      - type: openstack
+        name: region1
+        insecure: false
+        interface: admin
+        credentials:
+          auth_url: http://example.net:5000/
+          username: admin
+          password: admin
+          tenant_name: admin
+
+By some reasons, it is valuable not to use ServiceCatalog to determine
+the Neutron endpoint but specify it with some certain value. For this case
+the ``endpoint_override`` should be used:
+
+.. code-block::
+
+    regions:
+      - type: openstack
+        name: region1
+        insecure: false
+        endpoint_override: http://example.net:9696/
+        credentials:
+          auth_url: http://example.net:5000/
+          username: admin
+          password: admin
+          tenant_name: admin
 
 SSL configuration for CCP
 *************************
@@ -70,8 +107,6 @@ In case your region requires ssl, CCP config should have additional fields
 
       files:
         region1-key.pem: /opt/key.pem
-
-where section under files has mappings: *<region_name>-key.pem: <key_path>
 
 Service configuration example
 *****************************
